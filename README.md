@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/olmo-icon.png" width="120" alt="Olmo" />
+</p>
+
 <p align="center"><b>English</b> · <a href="README.es.md">Español</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh.md">中文</a></p>
 
 # Olmo
