@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terms of Service — Olmo</title>
+  <meta name="description" content="Terms of Service for Olmo, an open-source macOS meeting notetaker." />
+  <link rel="icon" type="image/png" href="assets/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sky: #DCDAD7;
+      --surface: #F2F1EE;
+      --ink: #1A1A1A;
+      --mid: #5F5D59;
+      --hairline: #B8B6B3;
+      --serif: "Instrument Serif", Georgia, serif;
+      --body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--sky); color: var(--ink);
+      font-family: var(--body); font-size: 17px; line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+    .home {
+      display: inline-block; font-family: var(--serif); font-size: 30px;
+      color: var(--ink); text-decoration: none; letter-spacing: .5px; margin-bottom: 8px;
+    }
+    .home:hover { text-decoration: underline; }
+    h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(34px, 6vw, 48px); line-height: 1.1; margin: 18px 0 6px; }
+    h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(22px, 4vw, 28px); margin: 38px 0 10px; }
+    .updated { color: var(--mid); font-size: 15px; margin: 0 0 28px; }
+    p, li { color: #242424; }
+    a { color: var(--ink); }
+    ul { padding-left: 22px; }
+    li { margin: 6px 0; }
+    hr { border: none; border-top: 2px solid var(--hairline); margin: 40px 0; }
+    footer { color: var(--mid); font-size: 15px; }
+    footer a { color: var(--mid); margin-right: 16px; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <a class="home" href="./">Olmo</a>
+    <h1>Terms of Service</h1>
+    <p class="updated">Last updated: June 23, 2026</p>
+
+    <p>These Terms govern your use of Olmo (“the app”), an open-source macOS application. By downloading or using Olmo, you agree to these Terms. If you do not agree, please do not use the app.</p>
+
+    <h2>1. The app</h2>
+    <p>Olmo records, transcribes, and summarizes meetings on your Mac. It is provided as free, open-source software under the <a href="https://github.com/fjvalencian/olmo-mac/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>.</p>
+
+    <h2>2. Your responsibilities</h2>
+    <ul>
+      <li><strong>Recording consent.</strong> You are responsible for complying with all laws that apply to recording conversations, including obtaining consent from participants where required. Olmo is a tool; how you use it is your responsibility.</li>
+      <li><strong>Third-party accounts and keys.</strong> Olmo works with third-party services (Deepgram, OpenAI, Google, Notion) using credentials and API keys that you provide. You are responsible for your use of those services and any costs they charge, and your use of them is subject to their own terms.</li>
+      <li><strong>Lawful use.</strong> You agree not to use Olmo for any unlawful purpose.</li>
+    </ul>
+
+    <h2>3. Privacy</h2>
+    <p>Your use of Olmo is also governed by our <a href="privacy.html">Privacy Policy</a>.</p>
+
+    <h2>4. Disclaimer of warranty</h2>
+    <p>Olmo is provided “as is”, without warranty of any kind, express or implied. Transcriptions and AI-generated summaries may be inaccurate or incomplete and should not be relied upon as the sole record of any conversation. To the maximum extent permitted by law, we disclaim all warranties.</p>
+
+    <h2>5. Limitation of liability</h2>
+    <p>To the maximum extent permitted by law, the developers of Olmo shall not be liable for any indirect, incidental, or consequential damages arising from your use of the app, including data loss or costs incurred with third-party services.</p>
+
+    <h2>6. Changes</h2>
+    <p>We may update these Terms. Continued use of the app after changes take effect means you accept the updated Terms.</p>
+
+    <h2>7. Contact</h2>
+    <p>Questions about these Terms? Email <a href="mailto:fjvalencian@gmail.com">fjvalencian@gmail.com</a>.</p>
+
+    <hr />
+    <footer>
+      <a href="./">Home</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="https://github.com/fjvalencian/olmo-mac" target="_blank" rel="noopener">GitHub</a>
+    </footer>
+  </main>
+</body>
+</html>
