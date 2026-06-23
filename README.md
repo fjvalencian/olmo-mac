@@ -72,6 +72,21 @@ lot of meetings before you pay anything.
 
 You set your **OpenAI key** the same way (it powers the AI summaries).
 
+
+## Privacy & security
+
+Olmo is built so your conversations stay yours.
+
+- **Local-first.** Your recordings and notes are stored **on your Mac** (Core Data). They're not uploaded to any Olmo server.
+- **No Olmo middleman (BYOK).** Transcription and summaries run through **your own** Deepgram and OpenAI keys — that data goes to *your* accounts at those providers, not through a server of ours.
+- **No tracking.** No third-party analytics, telemetry, or ad SDKs. Olmo doesn't phone home.
+- **Keys kept safe.** Your API keys and tokens are stored in the **macOS Keychain** (device-only, kept off iCloud).
+- **Opt-in integrations.** Notion and Google Calendar are only contacted when *you* connect them, using *your* token/account, for the actions you authorize.
+- **Permissions you control.** Olmo asks for the microphone (your voice) and screen recording (to capture the other side's system audio). You grant these in macOS and can revoke them anytime.
+- **Open source.** Don't take our word for it — the code is here for you to read and verify.
+
+> Honest note: to turn speech into text and text into summaries, audio and transcripts are sent to the providers you choose (Deepgram, OpenAI) using your own keys. Olmo can't do that fully on-device — but it's *your* accounts and *your* data, and nothing is stored on an Olmo server.
+
 ## Tech
 
 SwiftUI (macOS 14+) · AVFoundation + ScreenCaptureKit (mic + system audio) ·

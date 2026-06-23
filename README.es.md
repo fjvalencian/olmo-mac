@@ -73,6 +73,21 @@ gratis** y sin tarjeta — muchas reuniones antes de pagar nada.
 
 Tu **clave de OpenAI** se configura igual (es la que genera los resúmenes con IA).
 
+
+## Privacidad y seguridad
+
+Olmo está hecho para que tus conversaciones sigan siendo tuyas.
+
+- **Local primero.** Tus grabaciones y notas se guardan **en tu Mac** (Core Data). No se suben a ningún servidor de Olmo.
+- **Sin intermediario de Olmo (BYOK).** La transcripción y los resúmenes usan **tus propias** claves de Deepgram y OpenAI — esos datos van a *tus* cuentas en esos servicios, no a un servidor nuestro.
+- **Sin rastreo.** Ningún SDK de analítica, telemetría ni publicidad. Olmo no "llama a casa".
+- **Claves a salvo.** Tus claves de API y tokens se guardan en el **Keychain de macOS** (solo en el dispositivo, fuera de iCloud).
+- **Integraciones opt-in.** Notion y Google Calendar solo se contactan cuando *tú* los conectas, con *tu* token/cuenta, para las acciones que autorices.
+- **Permisos que tú controlas.** Olmo pide micrófono (tu voz) y grabación de pantalla (para captar el audio del sistema de la otra persona). Los concedes en macOS y los puedes revocar cuando quieras.
+- **Open source.** No tienes que creernos — el código está aquí para que lo leas y lo verifiques.
+
+> Nota honesta: para convertir voz en texto y texto en resúmenes, el audio y las transcripciones se envían a los servicios que elijas (Deepgram, OpenAI) con tus propias claves. Olmo no puede hacerlo del todo en el dispositivo — pero son *tus* cuentas y *tus* datos, y nada se guarda en un servidor de Olmo.
+
 ## Tecnología
 
 SwiftUI (macOS 14+) · AVFoundation + ScreenCaptureKit (micrófono + audio del
