@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Olmo — AI meeting notes for macOS</title>
+  <meta name="description" content="Olmo records both sides of the call, transcribes live, and writes the summary — privately, on your Mac." />
+  <link rel="icon" type="image/png" href="assets/icon.png" />
+  <link rel="apple-touch-icon" href="assets/icon.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Olmo — AI meeting notes for macOS" />
+  <meta property="og:description" content="Records both sides of the call, transcribes live, and writes the summary — privately, on your Mac." />
+  <meta property="og:image" content="assets/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sky: #DCDAD7;          /* page / sky */
+      --sky-top: #E7E5E2;      /* lighter top of sky gradient */
+      --surface: #EDEBE8;      /* panels */
+      --ink: #1A1A1A;          /* near-black */
+      --ink-on: #EDEBE8;       /* text on ink */
+      --mid: #5F5D59;          /* mid gray (darkened for contrast) */
+      --hairline: #B8B6B3;     /* borders */
+      /* Instrument Serif everywhere; CJK falls back to system serif faces */
+      --serif: "Instrument Serif", Georgia, "Hiragino Mincho ProN", "Songti SC", "Yu Mincho", "Noto Serif CJK SC", serif;
+      --pixel: var(--serif);
+      --pixel-head: var(--serif);
+      --body: var(--serif);
+      --maxw: 760px;
+      --maxw-wide: 1000px;
+      --pad-y: clamp(64px, 11vw, 128px);
+    }
+    /* Chinese: prioritise a Simplified-Chinese serif */
+    html[lang="zh-Hans"] {
+      --serif: "Instrument Serif", "Songti SC", "STSong", "Noto Serif CJK SC", serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; overflow-x: clip; }
+    body {
+      background: var(--sky);
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: clamp(17px, 1.5vw, 20px);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    img {
+      max-width: 100%; display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+    .wrap--wide { max-width: var(--maxw-wide); }
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 0;
+    }
+
+    h1, h2 { font-weight: 400; line-height: 1.25; margin: 0; }
+
+    /* tiny pixel section labels */
+    .label {
+      font-family: var(--serif);
+      font-size: 16px; line-height: 1.3;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--ink); margin: 0;
+    }
+    .meta { font-family: var(--body); font-size: 15px; color: var(--mid); }
+
+    /* ===== Hero action buttons (top nav removed) ===== */
+    .hero__cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+    @media (max-width: 799px) { .hero__cta-row { justify-content: center; } }
+    .btn.btn--ghost {
+      background: var(--surface); color: var(--ink);
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn--ghost svg { display: block; flex: 0 0 auto; }
+    .gh-stars { font-variant-numeric: tabular-nums; }
+
+    /* ===== Hero ===== */
+    .hero {
+      position: relative; overflow: hidden;
+      border-bottom: 4px solid var(--ink);
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky) 100%);
+    }
+    .hero__inner {
+      max-width: var(--maxw-wide); margin: 0 auto;
+      padding: clamp(44px, 7vw, 92px) 24px clamp(52px, 8vw, 100px);
+      display: grid; grid-template-columns: 1fr; gap: clamp(34px, 5vw, 56px);
+      align-items: center; text-align: center;
+    }
+    @media (min-width: 800px) {
+      .hero__inner { grid-template-columns: 1.05fr .95fr; text-align: left; }
+    }
+    .hero__copy { position: relative; z-index: 2; }
+    .hero__mark { width: clamp(40px, 5vw, 56px); height: auto; margin: 0 auto 16px; }
+    @media (min-width: 800px) { .hero__mark { margin-left: 0; } }
+    .hero__word {
+      font-family: var(--serif); font-size: clamp(64px, 12vw, 124px);
+      line-height: .92; letter-spacing: 1px; margin: 0 0 6px; color: var(--ink);
+    }
+    .hero__tagline {
+      font-family: var(--serif); font-size: clamp(14px, 1.7vw, 17px);
+      letter-spacing: 4px; text-transform: uppercase; color: var(--mid); margin: 0 0 18px;
+    }
+    .hero__badges { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 22px; }
+    @media (max-width: 799px) { .hero__badges { justify-content: center; } }
+    .pill {
+      display: inline-block; font-family: var(--serif); font-size: 16px;
+      color: var(--ink-on); background: var(--ink);
+      padding: 4px 16px; border-radius: 999px; letter-spacing: .3px; line-height: 1.3;
+    }
+    .pill--ghost { background: transparent; color: var(--ink); border: 2px solid var(--ink); padding: 2px 14px; }
+    .hero__title {
+      font-family: var(--serif); font-size: clamp(30px, 4.4vw, 48px);
+      line-height: 1.12; margin: 0 auto 16px; max-width: 16ch; color: var(--ink);
+    }
+    .hero__sub {
+      font-family: var(--body); color: #2e2e2e; font-size: clamp(16px, 1.7vw, 19px);
+      line-height: 1.5; margin: 0 auto 26px; max-width: 46ch;
+    }
+    @media (min-width: 800px) { .hero__title, .hero__sub { margin-left: 0; } }
+    .hero__cta { margin: 0; }
+    .hero__req { margin-top: 14px; }
+
+    /* girl portrait built from the clean app icon (white corners clipped by radius) */
+    .hero__portrait { position: relative; justify-self: center; z-index: 1; }
+    .hero__portrait img {
+      width: clamp(210px, 30vw, 330px); height: auto;
+      border: 4px solid var(--ink); border-radius: 20%;
+      background: var(--surface);
+      box-shadow: 10px 10px 0 var(--hairline);
+      image-rendering: pixelated;
+    }
+    /* "+" sparkle accents */
+    .spark { position: absolute; font-family: var(--pixel); color: var(--ink); pointer-events: none; user-select: none; line-height: 1; }
+    .spark::before { content: "+"; }
+    @media (prefers-reduced-motion: no-preference) {
+      .spark--tw { animation: twinkle 3.6s steps(2) infinite; }
+    }
+    @keyframes twinkle { 0%,100%{opacity:.75} 50%{opacity:.25} }
+
+    /* ===== Pixel button ===== */
+    .btn {
+      display: inline-block; font-family: var(--serif); font-size: 19px; letter-spacing: .3px;
+      background: var(--ink); color: var(--ink-on); text-decoration: none;
+      padding: 11px 28px; border: 2px solid var(--ink);
+      box-shadow: 5px 5px 0 var(--hairline);
+      transition: transform .08s steps(2), box-shadow .08s steps(2);
+    }
+    .btn:hover { transform: translate(2px,2px); box-shadow: 3px 3px 0 var(--hairline); }
+    .req { margin-top: 12px; }
+
+    /* ===== dithered divider ===== */
+    .divider {
+      height: 8px; width: 100%;
+      background-image:
+        repeating-linear-gradient(90deg, var(--ink) 0 4px, transparent 4px 8px),
+        repeating-linear-gradient(90deg, transparent 0 4px, var(--ink) 4px 8px);
+      background-size: 8px 4px, 8px 4px;
+      background-position: 0 0, 0 4px;
+      background-repeat: repeat-x;
+      opacity: .9;
+    }
+
+    /* ===== Features ===== */
+    .features { padding: var(--pad-y) 0; display: grid; gap: clamp(24px, 4vw, 32px); }
+    @media (min-width: 720px) { .features { grid-template-columns: repeat(2, 1fr); } }
+    .feature {
+      background: var(--surface);
+      border: 2px solid var(--ink);
+      box-shadow: 6px 6px 0 var(--hairline);
+      padding: 22px 20px;
+    }
+    .feature__head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .feature__bullet { width: 26px; height: 26px; flex: 0 0 auto; }
+    .feature .label { margin: 0; }
+    .feature p:not(.label) { margin: 0; font-size: 17px; line-height: 1.5; }
+
+    /* ===== See ===== */
+    .see { padding: var(--pad-y) 0; text-align: center; }
+    .see h2 { font-family: var(--serif); font-size: clamp(30px, 4.4vw, 48px); margin-bottom: 14px; line-height: 1.12; }
+    .see__body { color: #2e2e2e; margin: 0 auto; max-width: 42ch; font-size: clamp(16px, 1.7vw, 19px); }
+
+    /* ===== Game-Boy style window frame for screenshots ===== */
+    .shot {
+      margin: clamp(40px, 7vw, 72px) auto 0; max-width: var(--maxw-wide);
+      background: var(--surface);
+      border: 4px solid var(--ink);
+      box-shadow: 10px 10px 0 var(--hairline);
+    }
+    .shot__bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; border-bottom: 4px solid var(--ink);
+      background: var(--ink);
+    }
+    .shot__bar span { width: 12px; height: 12px; background: var(--ink-on); display: inline-block; }
+    .shot__bar .shot__title {
+      margin-left: auto; font-family: var(--serif); font-size: 14px; color: var(--ink-on);
+      letter-spacing: .5px;
+    }
+    .shot img { width: 100%; }
+    .shot__ph { /* placeholder until real screenshot */
+      aspect-ratio: 16 / 10; display: grid; place-items: center; gap: 14px;
+      font-family: var(--serif); font-size: 16px; color: var(--mid);
+      background:
+        repeating-linear-gradient(45deg, rgba(26,26,26,.05) 0 8px, transparent 8px 16px);
+      text-align: center; padding: 24px;
+    }
+    .shot__ph img { width: 48px; height: auto; opacity: .7; }
+
+    /* ===== CTA ===== */
+    .cta { text-align: center; padding: var(--pad-y) 0; }
+    .cta h2 { font-family: var(--serif); font-size: clamp(30px, 4.4vw, 48px); margin-bottom: 22px; line-height: 1.12; }
+
+    /* ===== Footer ===== */
+    .footer { border-top: 4px solid var(--ink); padding: 40px 0; background: var(--surface); }
+    .footer__inner { max-width: var(--maxw-wide); margin: 0 auto; padding: 0 24px;
+      display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: center; justify-content: space-between; }
+    .footer__brand { display: flex; align-items: center; gap: 8px; }
+    .footer__brand img { width: 24px; height: 24px; }
+    .footer__brand span { font-family: var(--serif); font-size: 20px; letter-spacing: .5px; }
+    .footer__tagline { color: var(--mid); font-size: 15px; margin: 8px 0 0; }
+    .footer__links { font-family: var(--body); font-size: 16px; display: flex; gap: 12px 22px; flex-wrap: wrap; }
+    .footer__links a { color: var(--ink); text-decoration: none; border-bottom: 2px solid transparent; }
+    .footer__links a:hover { border-bottom-color: var(--ink); }
+    .langswitch { font-family: var(--body); font-size: 15px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .langswitch button {
+      background: var(--surface); border: 2px solid var(--ink); cursor: pointer; color: var(--ink);
+      font: inherit; padding: 4px 9px;
+    }
+    .langswitch button:hover { background: var(--sky); }
+    .langswitch button[aria-current="true"] { background: var(--ink); color: var(--ink-on); }
+
+    .reveal { opacity: 0; transform: translateY(12px); transition: opacity .5s steps(4), transform .5s steps(4); }
+    .reveal.is-in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .star { animation: none !important; }
+      * { scroll-behavior: auto !important; }
+    }
+
+    /* ===== Responsive hero ===== */
+    @media (max-width: 520px) {
+      .hero__portrait img { width: clamp(180px, 56vw, 240px); }
+    }
+  </style>
+</head>
+<body>
+  <main id="top">
+    <section class="hero" id="download" aria-label="Olmo">
+      <span class="spark spark--tw" style="top:8%; left:6%; font-size:14px; opacity:.5;" aria-hidden="true"></span>
+      <span class="spark" style="top:18%; right:8%; font-size:12px; opacity:.4;" aria-hidden="true"></span>
+      <div class="hero__inner">
+        <div class="hero__copy">
+          <img class="hero__mark" src="assets/tree.png" alt="Olmo elm-tree mark" />
+          <div class="hero__word" aria-hidden="true">OLMO</div>
+          <p class="hero__tagline" data-i18n="hero.tagline">AI Meeting Notetaker</p>
+          <div class="hero__badges">
+            <span class="pill" data-i18n="hero.platform">for Mac &amp; iOS</span>
+            <span class="pill pill--ghost" data-i18n="hero.oss">Open source</span>
+          </div>
+          <h1 class="hero__title" data-i18n="hero.title">Meeting notes that never leave your Mac.</h1>
+          <p class="hero__sub" data-i18n="hero.sub">Olmo records both sides of the call, transcribes live, and writes the summary — privately, on your Mac.</p>
+          <div class="hero__cta-row">
+            <a class="btn" id="dl-hero" href="#" data-i18n="hero.cta">Download for Mac</a>
+            <a class="btn btn--ghost" id="ghstar" href="#" target="_blank" rel="noopener" aria-label="Star Olmo on GitHub">
+              <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+              <span data-i18n="nav.star">Star on GitHub</span>
+              <b class="gh-stars" hidden></b>
+            </a>
+          </div>
+          <p class="req hero__req meta" data-i18n="hero.req">Requires macOS 14 or later</p>
+        </div>
+        <div class="hero__portrait">
+          <span class="spark spark--tw" style="top:-16px; left:-12px; font-size:20px;" aria-hidden="true"></span>
+          <span class="spark" style="top:22%; right:-20px; font-size:14px; opacity:.6;" aria-hidden="true"></span>
+          <span class="spark" style="bottom:10%; left:-24px; font-size:16px; opacity:.7;" aria-hidden="true"></span>
+          <img src="assets/icon.png" alt="Olmo — pixel-art illustration of a girl" />
+        </div>
+      </div>
+    </section>
+
+    <div class="divider" aria-hidden="true"></div>
+
+    <section class="features wrap wrap--wide reveal">
+      <div class="feature">
+        <div class="feature__head">
+          <img class="feature__bullet" src="assets/tree.png" alt="" aria-hidden="true" />
+          <p class="label" data-i18n="feat1.label">Both sides</p>
+        </div>
+        <p data-i18n="feat1.body">Captures your microphone and the other person's voice at the system level — with or without headphones.</p>
+      </div>
+      <div class="feature">
+        <div class="feature__head">
+          <img class="feature__bullet" src="assets/tree.png" alt="" aria-hidden="true" />
+          <p class="label" data-i18n="feat2.label">No bot</p>
+        </div>
+        <p data-i18n="feat2.body">Nothing joins your meeting. Recording and transcription happen locally, on your Mac.</p>
+      </div>
+      <div class="feature">
+        <div class="feature__head">
+          <img class="feature__bullet" src="assets/tree.png" alt="" aria-hidden="true" />
+          <p class="label" data-i18n="feat4.label">Your keys, your data</p>
+        </div>
+        <p data-i18n="feat4.body">Bring your own Deepgram and OpenAI keys. Your audio and notes never pass through our servers — everything stays on your Mac.</p>
+      </div>
+      <div class="feature">
+        <div class="feature__head">
+          <img class="feature__bullet" src="assets/tree.png" alt="" aria-hidden="true" />
+          <p class="label" data-i18n="feat3.label">Yours to edit</p>
+        </div>
+        <p data-i18n="feat3.body">Live transcription becomes a clean Markdown summary you can edit, search, and keep.</p>
+      </div>
+      <div class="feature">
+        <div class="feature__head">
+          <img class="feature__bullet" src="assets/tree.png" alt="" aria-hidden="true" />
+          <p class="label" data-i18n="feat5.label">Syncs with Notion</p>
+        </div>
+        <p data-i18n="feat5.body">Every summary auto-exports to a Notion page — one meeting, one page, never duplicated.</p>
+      </div>
+      <div class="feature">
+        <div class="feature__head">
+          <img class="feature__bullet" src="assets/tree.png" alt="" aria-hidden="true" />
+          <p class="label" data-i18n="feat6.label">Google Calendar</p>
+        </div>
+        <p data-i18n="feat6.body">See your meetings and start notes straight from your calendar.</p>
+      </div>
+    </section>
+
+    <div class="divider" aria-hidden="true"></div>
+
+    <section class="see wrap reveal">
+      <h2 data-i18n="see.title">From conversation to clean notes.</h2>
+      <p class="see__body" data-i18n="see.body">Watch the transcript as you talk. When you stop, Olmo writes the summary.</p>
+      <figure class="shot">
+        <div class="shot__bar"><span></span><span></span><span></span><span class="shot__title">OLMO.app</span></div>
+        <div class="shot__ph">
+          <img src="assets/tree.png" alt="" aria-hidden="true" />
+          Olmo — summary view (screenshot)
+        </div>
+      </figure>
+    </section>
+
+    <div class="divider" aria-hidden="true"></div>
+
+    <section class="cta reveal">
+      <div class="wrap">
+        <h2 data-i18n="cta.title">Start taking better notes.</h2>
+        <a class="btn" href="#" data-i18n="cta.cta">Download for Mac</a>
+        <p class="req meta" data-i18n="cta.req">Requires macOS 14 or later</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <div>
+        <div class="footer__brand"><img src="assets/tree.png" alt="" aria-hidden="true" /><span>OLMO</span></div>
+        <p class="footer__tagline" data-i18n="footer.tagline">An AI meeting notetaker for macOS.</p>
+        <p class="footer__tagline">© 2026</p>
+      </div>
+      <nav class="footer__links" aria-label="Footer">
+        <a id="gh" href="#" target="_blank" rel="noopener" data-i18n="footer.github">GitHub</a>
+        <a id="license" href="#" target="_blank" rel="noopener" data-i18n="footer.license">MIT License</a>
+        <a id="issues" href="#" target="_blank" rel="noopener" data-i18n="footer.issues">Report an issue</a>
+        <a id="contribute" href="#" target="_blank" rel="noopener" data-i18n="footer.contribute">Contribute</a>
+        <a id="coffee" href="#" data-i18n="footer.coffee">Buy me a coffee</a>
+      </nav>
+      <div class="langswitch" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="ja">日本語</button>
+        <button type="button" data-lang="zh">中文</button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    "use strict";
+    // === Config — confirm before launch ===
+    const GITHUB_REPO = "fjvalencian/olmo-mac";
+    const GITHUB_URL = "https://github.com/" + GITHUB_REPO;
+    const DOWNLOAD_URL = GITHUB_URL + "/releases/latest/download/Olmo.dmg";
+    const COFFEE_URL = "#"; // TODO: real Buy-me-a-coffee link
+
+    const I18N = {
+      en: {
+        "hero.tagline": "AI Meeting Notetaker",
+        "hero.platform": "for Mac & iOS",
+        "hero.title": "Meeting notes that never leave your Mac.",
+        "hero.sub": "Olmo records both sides of the call, transcribes live, and writes the summary — privately, on your Mac.",
+        "hero.cta": "Download for Mac",
+        "hero.req": "Requires macOS 14 or later",
+        "feat1.label": "Both sides",
+        "feat1.body": "Captures your microphone and the other person's voice at the system level — with or without headphones.",
+        "feat2.label": "No bot",
+        "feat2.body": "Nothing joins your meeting. Recording and transcription happen locally, on your Mac.",
+        "feat3.label": "Yours to edit",
+        "feat3.body": "Live transcription becomes a clean Markdown summary you can edit, search, and keep.",
+        "feat4.label": "Your keys, your data",
+        "feat4.body": "Bring your own Deepgram and OpenAI keys. Your audio and notes never pass through our servers — everything stays on your Mac.",
+        "feat5.label": "Syncs with Notion",
+        "feat5.body": "Every summary auto-exports to a Notion page — one meeting, one page, never duplicated.",
+        "feat6.label": "Google Calendar",
+        "feat6.body": "See your meetings and start notes straight from your calendar.",
+        "see.title": "From conversation to clean notes.",
+        "see.body": "Watch the transcript as you talk. When you stop, Olmo writes the summary.",
+        "cta.title": "Start taking better notes.",
+        "cta.cta": "Download for Mac",
+        "cta.req": "Requires macOS 14 or later",
+        "footer.tagline": "An AI meeting notetaker for macOS.",
+        "footer.coffee": "Buy me a coffee",
+        "nav.star": "Star on GitHub",
+        "hero.oss": "Open source",
+        "footer.license": "MIT License",
+        "footer.issues": "Report an issue",
+        "footer.contribute": "Contribute",
+        "footer.github": "GitHub"
+      },
+      es: {
+        "hero.tagline": "Asistente de notas con IA",
+        "hero.platform": "para Mac e iOS",
+        "hero.title": "Notas de reunión que nunca salen de tu Mac.",
+        "hero.sub": "Olmo graba las dos voces de la llamada, transcribe en tiempo real y escribe el resumen — todo en tu Mac.",
+        "hero.cta": "Descargar para Mac",
+        "hero.req": "Requiere macOS 14 o superior",
+        "feat1.label": "Las dos voces",
+        "feat1.body": "Captura tu micrófono y la voz de la otra persona directo desde el sistema — con o sin auriculares.",
+        "feat2.label": "Sin bots",
+        "feat2.body": "Ningún bot entra a tu reunión. La grabación y la transcripción ocurren en tu Mac, sin pasar por servidores externos.",
+        "feat3.label": "Tuyas y editables",
+        "feat3.body": "La transcripción en tiempo real se convierte en un resumen en Markdown que puedes editar, buscar y guardar.",
+        "feat4.label": "Tus claves, tus datos",
+        "feat4.body": "Usa tus propias claves de Deepgram y OpenAI. Tu audio y tus notas nunca pasan por nuestros servidores — todo se queda en tu Mac.",
+        "feat5.label": "Se sincroniza con Notion",
+        "feat5.body": "Cada resumen se exporta solo a una página de Notion — una reunión, una página, sin duplicados.",
+        "feat6.label": "Google Calendar",
+        "feat6.body": "Consulta tus reuniones y empieza a tomar notas directo desde tu calendario.",
+        "see.title": "De la conversación a notas limpias.",
+        "see.body": "Ve la transcripción mientras hablas. Al terminar, Olmo escribe el resumen.",
+        "cta.title": "Empieza a tomar mejores notas.",
+        "cta.cta": "Descargar para Mac",
+        "cta.req": "Requiere macOS 14 o superior",
+        "footer.tagline": "Un asistente de notas con IA para macOS.",
+        "footer.coffee": "Invítame un café",
+        "nav.star": "Star on GitHub",
+        "hero.oss": "Código abierto",
+        "footer.license": "Licencia MIT",
+        "footer.issues": "Reportar un problema",
+        "footer.contribute": "Contribuir",
+        "footer.github": "GitHub"
+      },
+      ja: {
+        "hero.tagline": "AI会議ノートアプリ",
+        "hero.platform": "Mac と iOS 対応",
+        "hero.title": "Macから外に出ない、会議のノート。",
+        "hero.sub": "Olmoは通話の両方の音声を録音し、リアルタイムで文字起こしし、要約まで作成します。すべてあなたのMacの中で。",
+        "hero.cta": "Mac版をダウンロード",
+        "hero.req": "macOS 14以降が必要です",
+        "feat1.label": "両方の声",
+        "feat1.body": "マイクと相手の声をシステムレベルで収録。ヘッドホンの有無を問いません。",
+        "feat2.label": "ボットなし",
+        "feat2.body": "会議に何も参加させません。録音も文字起こしも、あなたのMacの中で完結します。",
+        "feat3.label": "編集できるノート",
+        "feat3.body": "リアルタイムの文字起こしが、編集・検索・保存できるMarkdownの要約になります。",
+        "feat4.label": "鍵もデータも、あなたのもの",
+        "feat4.body": "DeepgramとOpenAIのAPIキーは自分のものを使用。音声もノートも当社のサーバーを経由せず、すべてあなたのMacの中に留まります。",
+        "feat5.label": "Notionと同期",
+        "feat5.body": "要約は自動でNotionのページに書き出されます。1つの会議につき1ページ、重複なし。",
+        "feat6.label": "Google カレンダー",
+        "feat6.body": "カレンダーから会議を確認して、そのままノートを取り始められます。",
+        "see.title": "会話から、整ったノートへ。",
+        "see.body": "話しながら文字起こしを確認。録音を止めると、Olmoが要約を作成します。",
+        "cta.title": "もっと良いノートを、始めよう。",
+        "cta.cta": "Mac版をダウンロード",
+        "cta.req": "macOS 14以降が必要です",
+        "footer.tagline": "macOS向けのAI会議ノートアプリ。",
+        "footer.coffee": "コーヒーをおごる",
+        "nav.star": "Star on GitHub",
+        "hero.oss": "オープンソース",
+        "footer.license": "MITライセンス",
+        "footer.issues": "問題を報告",
+        "footer.contribute": "貢献する",
+        "footer.github": "GitHub"
+      },
+      zh: {
+        "hero.tagline": "AI 会议笔记助手",
+        "hero.platform": "适用于 Mac 与 iOS",
+        "hero.title": "永远留在你 Mac 上的会议笔记。",
+        "hero.sub": "Olmo 录制通话双方的声音，实时转录，并自动生成摘要——全部在你的 Mac 上完成，保护隐私。",
+        "hero.cta": "下载 Mac 版",
+        "hero.req": "需要 macOS 14 或更高版本",
+        "feat1.label": "双向收音",
+        "feat1.body": "在系统层面同时采集你的麦克风和对方的声音——无论是否佩戴耳机。",
+        "feat2.label": "没有机器人",
+        "feat2.body": "不会有任何程序加入你的会议。录音与转录都在你的 Mac 本地完成。",
+        "feat3.label": "可编辑的笔记",
+        "feat3.body": "实时转录会生成可编辑、可搜索、可保存的 Markdown 摘要。",
+        "feat4.label": "密钥与数据都归你",
+        "feat4.body": "使用你自己的 Deepgram 和 OpenAI 密钥。你的音频和笔记不会经过我们的服务器——一切都留在你的 Mac 上。",
+        "feat5.label": "同步到 Notion",
+        "feat5.body": "每条摘要都会自动导出到一个 Notion 页面——一次会议一个页面，绝不重复。",
+        "feat6.label": "Google 日历",
+        "feat6.body": "在日历里查看你的会议，直接开始记笔记。",
+        "see.title": "从对话到清晰的笔记。",
+        "see.body": "一边说话一边查看转录。停止录音后，Olmo 会写好摘要。",
+        "cta.title": "开始记录更好的笔记。",
+        "cta.cta": "下载 Mac 版",
+        "cta.req": "需要 macOS 14 或更高版本",
+        "footer.tagline": "一款 macOS 上的 AI 会议笔记应用。",
+        "footer.coffee": "请我喝杯咖啡",
+        "nav.star": "Star on GitHub",
+        "hero.oss": "开源",
+        "footer.license": "MIT 许可证",
+        "footer.issues": "报告问题",
+        "footer.contribute": "参与贡献",
+        "footer.github": "GitHub"
+      }
+    };
+
+    function t(lang, key) {
+      const dict = I18N[lang] || I18N.en;
+      return (dict && dict[key] != null) ? dict[key] : (I18N.en[key] != null ? I18N.en[key] : key);
+    }
+
+    function detectLang() {
+      const saved = localStorage.getItem("olmo_lang");
+      if (saved && I18N[saved]) return saved;
+      const nav = (navigator.language || "en").toLowerCase();
+      if (nav.startsWith("es")) return "es";
+      if (nav.startsWith("ja")) return "ja";
+      if (nav.startsWith("zh")) return "zh";
+      return "en";
+    }
+
+    function applyLang(lang) {
+      if (!I18N[lang]) lang = "en";
+      document.documentElement.lang = (lang === "zh") ? "zh-Hans" : lang;
+      document.querySelectorAll("[data-i18n]").forEach(function (el) {
+        const key = el.getAttribute("data-i18n");
+        if (I18N[lang][key] == null) console.warn("[i18n] missing key:", lang, key);
+        el.textContent = t(lang, key);
+      });
+      document.querySelectorAll("[data-lang]").forEach(function (el) {
+        const active = el.getAttribute("data-lang") === lang;
+        if (active) el.setAttribute("aria-current", "true");
+        else el.removeAttribute("aria-current");
+      });
+      try { localStorage.setItem("olmo_lang", lang); } catch (e) {}
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll(".btn").forEach(function (b) { b.href = DOWNLOAD_URL; });
+      document.getElementById("coffee").href = COFFEE_URL;
+      // wire all GitHub links from the single repo slug
+      var ghPaths = { gh: "", ghstar: "", license: "/blob/main/LICENSE", issues: "/issues", contribute: "/blob/main/CONTRIBUTING.md" };
+      Object.keys(ghPaths).forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.href = GITHUB_URL + ghPaths[id];
+      });
+      // live star count (skips while the repo slug is still a placeholder)
+      if (GITHUB_REPO.indexOf("OWNER") === -1) {
+        fetch("https://api.github.com/repos/" + GITHUB_REPO)
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) {
+            if (!d || typeof d.stargazers_count !== "number") return;
+            var n = d.stargazers_count;
+            if (n <= 0) return; // don't show a lonely "0" at launch
+            var label = n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n);
+            document.querySelectorAll(".gh-stars").forEach(function (el) { el.textContent = label; el.hidden = false; });
+          })
+          .catch(function () {});
+      }
+      document.querySelectorAll("[data-lang]").forEach(function (b) {
+        b.addEventListener("click", function () { applyLang(b.getAttribute("data-lang")); });
+      });
+      applyLang(detectLang());
+
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const reveals = document.querySelectorAll(".reveal");
+      if (mq.matches || !("IntersectionObserver" in window)) {
+        reveals.forEach(function (el) { el.classList.add("is-in"); });
+      } else {
+        const io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); } });
+        }, { threshold: 0.12 });
+        reveals.forEach(function (el) { io.observe(el); });
+      }
+    });
+  </script>
+</body>
+</html>
