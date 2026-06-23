@@ -45,6 +45,33 @@ xcodegen generate
 open Olmo-MacOS.xcodeproj   # then ⌘R
 ```
 
+
+## API keys (BYOK)
+
+Olmo is **bring-your-own-keys**: you connect your own Deepgram and OpenAI
+accounts, so your audio and notes go straight to the services *you* control —
+never through a server of ours.
+
+### Why Deepgram?
+
+Olmo transcribes **live, while you talk**, so it needs fast, accurate, real-time
+speech-to-text. Deepgram is built exactly for that: low-latency streaming, strong
+accuracy and multilingual support, and a simple **pay-as-you-go** model with no
+subscription. New accounts get **$200 in free credits** with no credit card — a
+lot of meetings before you pay anything.
+
+> The $200 is a **one-time sign-up credit** (it expires one year after signup),
+> not a monthly allowance. After it runs out you only pay for what you
+> transcribe, at pay-as-you-go rates.
+
+**Get your key:**
+
+1. Sign up at [console.deepgram.com/signup](https://console.deepgram.com/signup) — free, no credit card.
+2. In the Console, go to **API Keys → Create a New API Key** and copy it.
+3. In Olmo, open **Settings → API keys** and paste it in the Deepgram field.
+
+You set your **OpenAI key** the same way (it powers the AI summaries).
+
 ## Tech
 
 SwiftUI (macOS 14+) · AVFoundation + ScreenCaptureKit (mic + system audio) ·

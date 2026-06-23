@@ -42,6 +42,30 @@ xcodegen generate
 open Olmo-MacOS.xcodeproj   # 然后 ⌘R
 ```
 
+
+## API 密钥（BYOK）
+
+Olmo 采用 **自带密钥（BYOK）**：你连接自己的 Deepgram 和 OpenAI 账户，
+你的音频和笔记会直接发送到 *你* 掌控的服务——绝不经过我们的服务器。
+
+### 为什么选择 Deepgram？
+
+Olmo 会**在你说话的同时实时**转录，因此需要快速、准确的实时语音转文字。
+Deepgram 正是为此而生：低延迟流式传输、出色的准确度和多语言支持，以及
+简单的**按量付费**模式，无需订阅。新账户可获得 **$200 免费额度**，无需信用卡——
+在开始付费之前足够开很多场会议。
+
+> 这 $200 是**注册时一次性赠送的额度**（注册一年后过期），并非每月发放。
+> 用完之后，你只需按转录用量以按量付费的价格付费。
+
+**获取密钥：**
+
+1. 在 [console.deepgram.com/signup](https://console.deepgram.com/signup) 注册——免费、无需信用卡。
+2. 在控制台进入 **API Keys → Create a New API Key**，复制密钥。
+3. 在 Olmo 中打开 **设置 → API 密钥**，粘贴到 Deepgram 字段。
+
+**OpenAI 密钥**也以同样方式设置（用于生成 AI 摘要）。
+
 ## 技术栈
 
 SwiftUI (macOS 14+) · AVFoundation + ScreenCaptureKit（麦克风 + 系统音频）·
