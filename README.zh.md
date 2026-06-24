@@ -28,7 +28,7 @@ Olmo 会录制你的会议和通话，实时转录，并将其转化为干净、
 
 - 从 [Releases](https://github.com/fjvalencian/olmo-mac/releases) 页面**下载**
   最新的 `Olmo.dmg`。需要 **macOS 14 或更高版本**。
-- **网站:** <https://fjvalencian.github.io/olmo-mac/>
+- **网站:** <https://getolmo.app/>
 
 ### 从源码构建
 
