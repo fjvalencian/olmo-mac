@@ -31,7 +31,7 @@ own API keys. No bot joins your call, and your notes stay with you.
 - **Download** the latest `Olmo.dmg` from the
   [Releases](https://github.com/fjvalencian/olmo-mac/releases) page.
   Requires **macOS 14 or later**.
-- **Website:** <https://fjvalencian.github.io/olmo-mac/>
+- **Website:** <https://getolmo.app/>
 
 ### Build from source
 

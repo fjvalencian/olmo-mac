@@ -32,7 +32,7 @@ quedan contigo.
 - **Descarga** el último `Olmo.dmg` desde la página de
   [Releases](https://github.com/fjvalencian/olmo-mac/releases).
   Requiere **macOS 14 o superior**.
-- **Sitio web:** <https://fjvalencian.github.io/olmo-mac/>
+- **Sitio web:** <https://getolmo.app/>
 
 ### Compilar desde el código
 

@@ -30,7 +30,7 @@ Markdown の要約に変換します。すべてあなたの Mac 上で、あな
 
 - [Releases](https://github.com/fjvalencian/olmo-mac/releases) から最新の
   `Olmo.dmg` を**ダウンロード**してください。**macOS 14 以降**が必要です。
-- **ウェブサイト:** <https://fjvalencian.github.io/olmo-mac/>
+- **ウェブサイト:** <https://getolmo.app/>
 
 ### ソースからビルド
 
